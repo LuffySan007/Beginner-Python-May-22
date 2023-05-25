@@ -1,0 +1,46 @@
+Q1. The Airport With the Most Traffic
+WITH CTE AS 
+(SELECT airport_id, 
+RANK() OVER(ORDER BY SUM(flights_count) DESC) AS RN
+FROM 
+(SELECT departure_airport AS airport_id, flights_count FROM flights
+UNION ALL
+SELECT arrival_airport AS airport_id, flights_count FROM flights ) T
+GROUP BY airport_id )
+
+SELECT airport_id 
+FROM CTE 
+WHERE RN = 1
+ORDER BY airport_id;
+
+Q2. Grand Slam
+with CTE as 
+(select Wimbledon as id from championships
+union all 
+select Fr_open as id from championships
+union all 
+select US_open as id from championships
+union all 
+select Au_open as id from championships )
+select player_id, player_name, count(*) as grand_slams_count
+from players p join CTE on p.player_id = CTE.id
+group by player_id, player_name
+order by player_id;
+
+Q3.Difference of salary
+SELECT 
+employee_id, salary,
+lead(salary) OVER(ORDER BY salary) AS next_higher_salary,
+lead(salary) OVER(ORDER BY salary) - salary AS salary_difference
+FROM employees
+order by salary, salary_difference;
+
+Q4.Most Recent
+select distinct first_name, last_value(start_date)
+over(partition by jhist.employee_id
+order by start_date asc
+RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as 'recent_job'
+from job_history jhist
+join employees emp 
+on jhist.employee_id=emp.employee_id
+order by first_name;
